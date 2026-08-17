@@ -1,0 +1,21 @@
+# Secrets
+.env*
+
+# Git
+.git
+.gitignore
+.gitkeep
+
+# Host runtime state — mounted as volumes in docker-compose instead.
+logs/*
+!logs/
+data/*
+!data/
+
+# Build artifacts / docs not needed in the runtime image.
+z_*
+*.md
+.copilot/
+.vscode/
+completed_plans/
+test-php.php

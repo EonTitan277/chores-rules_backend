@@ -1,0 +1,15 @@
+.vscode/
+
+public
+
+z_*
+completed_plans/
+plan*.md
+.env*
+!.env.docker
+!.env.laragon
+
+logs/*
+!logs/.gitkeep
+data/*
+!data/.gitkeep

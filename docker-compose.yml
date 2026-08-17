@@ -1,0 +1,73 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: chores-app
+    restart: unless-stopped
+    command: ["sh", "-c", "cron && apache2-foreground"]
+    ports:
+      - "${HOST_PORT:-3001}:80"
+    environment:
+      TZ: America/New_York
+      HOST_PORT: "${HOST_PORT}"
+      SESSION_SECRET: "${SESSION_SECRET}"
+      MYSQL_HOST: "${MYSQL_HOST}"
+      MYSQL_DB: "${MYSQL_DB}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      ADMIN_1: "${ADMIN_1}"
+      PASSWORD_HASH_1: "${PASSWORD_HASH_1}"
+      ADMIN_2: "${ADMIN_2:-}"
+      PASSWORD_HASH_2: "${PASSWORD_HASH_2:-}"
+      KIDUSER: "${KIDUSER}"
+      KIDPASS_HASH: "${KIDPASS_HASH}"
+      COUNCIL_NAME: "${COUNCIL_NAME}"
+      COUNCIL_PHONE: "${COUNCIL_PHONE}"
+      WEBROOT_PATH: "/var/www/public"
+      LOGS_PATH: "/var/www/logs"
+      DATA_PATH: "/var/www/data"
+    volumes:
+      - "${DATA_PATH:-./data}:/var/www/data"          # Map the data files for checkbox and custom chore persistence
+      - "${LOGS_PATH:-./logs}:/var/www/logs"          # Map logs dir so Fail2Ban can read them
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: chores-db
+    restart: unless-stopped
+    environment:
+      TZ: America/New_York
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DB}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      ADMIN_1: "${ADMIN_1}"
+      PASSWORD_HASH_1: "${PASSWORD_HASH_1}"
+      ADMIN_2: "${ADMIN_2:-}"
+      PASSWORD_HASH_2: "${PASSWORD_HASH_2:-}"
+      KIDUSER: "${KIDUSER}"
+      KIDPASS_HASH: "${KIDPASS_HASH}"
+    volumes:
+      # Persistent MySQL data directory.
+      - db-data:/var/lib/mysql
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        - "CMD"
+        - "mysqladmin"
+        - "ping"
+        - "-h"
+        - "localhost"
+        - "-u"
+        - "root"
+        - "-p${MYSQL_ROOT_PASSWORD}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  db-data:
