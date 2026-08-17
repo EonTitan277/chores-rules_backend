@@ -30,6 +30,7 @@ services:
     volumes:
       - "${DATA_PATH:-./data}:/var/www/data"          # Map the data files for checkbox and custom chore persistence
       - "${LOGS_PATH:-./logs}:/var/www/logs"          # Map logs dir so Fail2Ban can read them
+      - "${PUBLIC_PATH:-./public}:/var/www/public"    # Optionally map public dir
     depends_on:
       db:
         condition: service_healthy
