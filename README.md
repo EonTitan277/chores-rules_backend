@@ -38,6 +38,12 @@ Set at least:
 - `ADMIN_2` and `PASSWORD_HASH_2`: optional second admin credentials; configure both or neither
 - `SESSION_SECRET`: a generated random secret
 
+Keep `MYSQL_HOST=db` for Docker. Do not use `localhost`: inside the app
+container, `localhost` refers to the app container rather than the MySQL
+container. Bcrypt hashes contain `$`; store those values as single-quoted
+entries in `.env` (for example, `PASSWORD_HASH_1='your_bcrypt_hash'`) so
+Docker Compose does not treat hash fragments as variable interpolation.
+
 ### 2. Generate the session secret
 
 Run this from the project directory:

@@ -38,7 +38,7 @@ This guide explains how to run the PHP Chores & Rules application using **Larago
 **Option A: Use existing project location (recommended)**
 Keep the project where it already is and point a virtual host at it:
 ```
-E:\GoogleOne\desktop-sync\Projects\Commision\Dev\php-server\public
+C:\gits\chores-rules_backend\public
 ```
 
 **Option B: Copy to the Laragon www folder**

@@ -36,7 +36,9 @@ services:
         condition: service_healthy
 
   db:
-    image: mysql:8.0
+    build:
+      context: .
+      dockerfile: docker/db.Dockerfile
     container_name: chores-db
     restart: unless-stopped
     environment:
@@ -54,7 +56,6 @@ services:
     volumes:
       # Persistent MySQL data directory.
       - db-data:/var/lib/mysql
-      - ./docker/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test:
         - "CMD"
