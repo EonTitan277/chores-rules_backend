@@ -40,6 +40,12 @@ COPY api/     ./api/
 COPY data/    ./data/
 COPY logs/    ./logs/
 
+# Normalize permissions for PHP/Apache-readable application code. Host ACLs
+# and source file modes can otherwise leave copied files or parent directories
+# inaccessible to the www-data process on TrueNAS/other Unix hosts.
+RUN find /var/www/includes /var/www/public /var/www/api -type d -exec chmod 0755 {} + \
+    && find /var/www/includes /var/www/public /var/www/api -type f -exec chmod 0644 {} +
+
 RUN chown -R www-data:www-data /var/www/data /var/www/logs
 
 
