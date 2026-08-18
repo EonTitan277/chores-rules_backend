@@ -27,8 +27,8 @@ RUN mkdir -p /var/www/data /var/www/logs \
     && chown -R www-data:www-data /var/www/data /var/www/logs
 
 RUN printf 'SHELL=/bin/sh\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\n0 0 * * * www-data /usr/local/bin/php /var/www/includes/reset-chores-checkboxes.php >> /var/www/logs/chores-reset.log 2>&1\n0 3 * * * www-data /usr/local/bin/php /var/www/includes/cleanup-login-attempts.php >> /var/www/logs/cleanup.log 2>&1\n' \
-    > /etc/cron.d/cleanup-login-attempts \
-    && chmod 0644 /etc/cron.d/cleanup-login-attempts
+    > /etc/cron.d/chores-rules \
+    && chmod 0644 /etc/cron.d/chores-rules
 
 WORKDIR /var/www
 

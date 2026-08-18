@@ -9,7 +9,7 @@ services:
     ports:
       - "${HOST_PORT:-3001}:80"
     environment:
-      TZ: America/New_York
+      TZ: "${TIME_ZONE:-America/New_York}"
       HOST_PORT: "${HOST_PORT}"
       SESSION_SECRET: "${SESSION_SECRET}"
       MYSQL_HOST: "${MYSQL_HOST}"
@@ -42,7 +42,7 @@ services:
     container_name: chores-db
     restart: unless-stopped
     environment:
-      TZ: America/New_York
+      TZ: "${TIME_ZONE:-America/New_York}"
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${MYSQL_DB}"
       MYSQL_USER: "${MYSQL_USER}"
