@@ -22,6 +22,8 @@ services:
       PASSWORD_HASH_2: "${PASSWORD_HASH_2:-}"
       KIDUSER: "${KIDUSER}"
       KIDPASS_HASH: "${KIDPASS_HASH}"
+      READONLYUSER: "${READONLYUSER:-}"
+      READONLYPASS_HASH: "${READONLYPASS_HASH:-}"
       COUNCIL_NAME: "${COUNCIL_NAME}"
       COUNCIL_PHONE: "${COUNCIL_PHONE}"
       WEBROOT_PATH: "/var/www/public"
@@ -53,6 +55,8 @@ services:
       PASSWORD_HASH_2: "${PASSWORD_HASH_2:-}"
       KIDUSER: "${KIDUSER}"
       KIDPASS_HASH: "${KIDPASS_HASH}"
+      READONLYUSER: "${READONLYUSER:-}"
+      READONLYPASS_HASH: "${READONLYPASS_HASH:-}"
     volumes:
       # Persistent MySQL data directory.
       - db-data:/var/lib/mysql

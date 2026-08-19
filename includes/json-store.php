@@ -6,6 +6,19 @@
 declare(strict_types=1);
 
 /**
+ * Reject state writes from users who are authenticated only for viewing.
+ */
+function requireStateWriteAccess(): void
+{
+    if (($_SESSION['role'] ?? null) === 'readonly') {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'Read-only users cannot modify state'], JSON_THROW_ON_ERROR);
+        exit;
+    }
+}
+
+/**
  * Read a JSON object while holding the same lock used for updates.
  *
  * @return array<string, mixed>

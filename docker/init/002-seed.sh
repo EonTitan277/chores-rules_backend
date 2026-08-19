@@ -33,13 +33,24 @@ if [[ -n "${ADMIN_2-}" || -n "${PASSWORD_HASH_2-}" ]]; then
     require_var PASSWORD_HASH_2
 fi
 
+if [[ -n "${READONLYUSER-}" || -n "${READONLYPASS_HASH-}" ]]; then
+    require_var READONLYUSER
+    require_var READONLYPASS_HASH
+fi
+
 USER_VALUES="  ('$(sql_escape "$ADMIN_1")',      '$(sql_escape "$PASSWORD_HASH_1")', 'admin'),"
 if [[ -n "${ADMIN_2-}" ]]; then
     USER_VALUES+=$'\n'
     USER_VALUES+="  ('$(sql_escape "$ADMIN_2")',      '$(sql_escape "$PASSWORD_HASH_2")', 'admin'),"
 fi
 USER_VALUES+=$'\n'
-USER_VALUES+="  ('$(sql_escape "$KIDUSER")',      '$(sql_escape "$KIDPASS_HASH")',    'kid');"
+USER_VALUES+="  ('$(sql_escape "$KIDUSER")',      '$(sql_escape "$KIDPASS_HASH")',    'kid'),"
+if [[ -n "${READONLYUSER-}" ]]; then
+    USER_VALUES+=$'\n'
+    USER_VALUES+="  ('$(sql_escape "$READONLYUSER")', '$(sql_escape "$READONLYPASS_HASH")', 'readonly');"
+else
+    USER_VALUES="${USER_VALUES%,}"
+fi
 
 SQL_FILE="$(mktemp)"
 trap 'rm -f "$SQL_FILE"' EXIT

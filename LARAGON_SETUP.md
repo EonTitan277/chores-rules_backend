@@ -52,7 +52,7 @@ With this option, Laragon can auto-generate the virtual host (see Step 4, Option
 
 ## Step 3: Set Up the Database
 
-> **Automated alternative**: after configuring `.env` and generating the password hashes, run `php setup-database.php` from the project root. It creates the database, `users` table, and `login_attempts` table, then seeds `ADMIN_1` and `KIDUSER`. `ADMIN_2` and `PASSWORD_HASH_2` are optional; configure both together if a second admin is needed.
+> **Automated alternative**: after configuring `.env` and generating the password hashes, run `php setup-database.php` from the project root. It creates the database, `users` table, and `login_attempts` table, then seeds the configured users. The optional credential pairs must be configured together when used.
 
 ### 3.1 Create Database and App User
 Open Laragon → Menu → MySQL → **HeidiSQL** (or any MySQL client), connect with `root` / empty password, and run:
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `username`     VARCHAR(64)  NOT NULL,
     `password_hash` VARCHAR(255) NOT NULL,
-    `role`         ENUM('kid', 'admin') NOT NULL DEFAULT 'kid',
+    `role`         ENUM('kid', 'admin', 'readonly') NOT NULL DEFAULT 'kid',
     `created_at`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_users_username` (`username`)
@@ -104,6 +104,8 @@ php hash-passwords.php "your_admin_password"
 php hash-passwords.php "your_kid_password"
 # Only if configuring ADMIN_2:
 php hash-passwords.php "your_parent_password"
+# Only if configuring READONLYUSER:
+php hash-passwords.php "your_viewer_password"
 ```
 
 ### 3.5 Seed the Database (Create Users)
@@ -118,7 +120,7 @@ INSERT IGNORE INTO `users` (`username`, `password_hash`, `role`) VALUES
   ('kid',    'your_bcrypt_hash',   'kid');
 ```
 
-If `ADMIN_2` and `PASSWORD_HASH_2` are both configured, add the second admin row to the seed SQL. If using `php setup-database.php`, no manual seed SQL is required.
+If `ADMIN_2` and `PASSWORD_HASH_2` are both configured, add the second admin row to the seed SQL. If `READONLYUSER` and `READONLYPASS_HASH` are both configured, add a row with role `readonly`. If using `php setup-database.php`, no manual seed SQL is required.
 
 ---
 
@@ -130,7 +132,7 @@ copy .env.laragon .env
 ```
 (On non-Windows shells, use `cp .env.laragon .env`.)
 
-Paste the password hashes from Step 3.4 into the appropriate `.env` keys. `ADMIN_2` and `PASSWORD_HASH_2` may be left commented out, but they must both be configured when used.
+Paste the password hashes from Step 3.4 into the appropriate `.env` keys. The optional admin and read-only credential pairs may be left commented out, but each pair must be configured together when used.
 
 ---
 

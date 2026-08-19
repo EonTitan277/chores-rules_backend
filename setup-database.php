@@ -20,6 +20,8 @@ try {
     $passwordHash1 = env('PASSWORD_HASH_1');
     $kidUser = env('KIDUSER');
     $kidPasswordHash = env('KIDPASS_HASH');
+    $readonlyUser = env('READONLYUSER');
+    $readonlyPasswordHash = env('READONLYPASS_HASH');
 
     foreach ([
         'MYSQL_HOST' => $mysqlHost,
@@ -77,13 +79,16 @@ try {
             `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
             `username` VARCHAR(64) NOT NULL,
             `password_hash` VARCHAR(255) NOT NULL,
-            `role` ENUM('kid', 'admin') NOT NULL DEFAULT 'kid',
+            `role` ENUM('kid', 'admin', 'readonly') NOT NULL DEFAULT 'kid',
             `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (`id`),
             UNIQUE KEY `uq_users_username` (`username`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
     echo "✓ Users table created/verified\n";
+
+    // Upgrade databases created before the read-only role was introduced.
+    $pdo->exec("ALTER TABLE `users` MODIFY `role` ENUM('kid', 'admin', 'readonly') NOT NULL DEFAULT 'kid'");
     
     // Insert default users if they don't exist. ADMIN_2 is optional.
     $users = [
@@ -98,6 +103,13 @@ try {
     }
     if ($admin2 !== null && $passwordHash2 !== null) {
         $users[] = ['username' => $admin2, 'password_hash' => $passwordHash2, 'role' => 'admin'];
+    }
+
+    if (($readonlyUser === null) !== ($readonlyPasswordHash === null)) {
+        throw new RuntimeException('READONLYUSER and READONLYPASS_HASH must either both be configured or both be omitted.');
+    }
+    if ($readonlyUser !== null && $readonlyPasswordHash !== null) {
+        $users[] = ['username' => $readonlyUser, 'password_hash' => $readonlyPasswordHash, 'role' => 'readonly'];
     }
     
     $stmt = $pdo->prepare("

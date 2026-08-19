@@ -36,6 +36,7 @@ Set at least:
 - `ADMIN_1` and `KIDUSER`: login usernames
 - `PASSWORD_HASH_1` and `KIDPASS_HASH`: generated password hashes
 - `ADMIN_2` and `PASSWORD_HASH_2`: optional second admin credentials; configure both or neither
+- `READONLYUSER` and `READONLYPASS_HASH`: optional read-only credentials; configure both or neither
 - `SESSION_SECRET`: a generated random secret
 
 Keep `MYSQL_HOST=db` for Docker. Do not use `localhost`: inside the app
@@ -63,9 +64,11 @@ php hash-passwords.php "your_admin_password"
 php hash-passwords.php "your_kid_password"
 # Only when configuring ADMIN_2:
 php hash-passwords.php "your_parent_password"
+# Only when configuring READONLYUSER:
+php hash-passwords.php "your_viewer_password"
 ```
 
-Copy the results into `PASSWORD_HASH_1` and `KIDPASS_HASH` (and `PASSWORD_HASH_2` only when configuring `ADMIN_2`). Use strong, unique passwords and do not commit the plain-text passwords or `.env` file.
+Copy the results into `PASSWORD_HASH_1` and `KIDPASS_HASH` (and the optional account hash keys when configuring those accounts). Use strong, unique passwords and do not commit the plain-text passwords or `.env` file.
 
 ### 4. Start the application
 
@@ -75,7 +78,7 @@ docker compose up -d --build
 
 Open `http://localhost:<HOST_PORT>` in a browser, for example `http://localhost:3001`.
 
-The first database startup creates the schema and seeds the users from `.env`. `ADMIN_2` is optional; if it is used, `PASSWORD_HASH_2` must also be provided. MySQL data is stored in the Docker volume `db-data`; checkbox/text data and logs are stored in the host folders configured by `DATA_PATH` and `LOGS_PATH`.
+The first database startup creates the schema and seeds the users from `.env`. `ADMIN_2`/`PASSWORD_HASH_2` and `READONLYUSER`/`READONLYPASS_HASH` are optional, but each pair must be provided together. MySQL data is stored in the Docker volume `db-data`; checkbox/text data and logs are stored in the host folders configured by `DATA_PATH` and `LOGS_PATH`.
 
 ### Useful commands
 
@@ -122,7 +125,7 @@ Keep the origin and Docker app port inaccessible from the public internet so Clo
 
 ### Database initialization fails
 
-- Confirm `.env` exists beside `docker-compose.yml` and contains non-placeholder values for `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `MYSQL_DB`, and the required seeded-user variables. `ADMIN_2` and `PASSWORD_HASH_2` are optional, but must be supplied together when used.
+- Confirm `.env` exists beside `docker-compose.yml` and contains non-placeholder values for `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `MYSQL_DB`, and the required seeded-user variables. The optional admin and read-only credential pairs must be supplied together when used.
 - Inspect the startup output with `docker compose logs db`.
 - Initialization scripts run only when MySQL creates a new data directory. If the database is disposable and the credentials are wrong, stop the stack and recreate the volume with `docker compose down -v`, then start it again. This deletes all database data.
 - If the database already contains data, changing `.env` will not rerun `002-seed.sh`; update existing users in MySQL or use a deliberate migration instead.
