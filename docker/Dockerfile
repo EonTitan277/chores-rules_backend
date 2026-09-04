@@ -26,9 +26,22 @@ RUN printf '<Directory "%s">\n\
 RUN mkdir -p /var/www/data /var/www/logs \
     && chown -R www-data:www-data /var/www/data /var/www/logs
 
-RUN printf 'SHELL=/bin/sh\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\n0 0 * * * www-data /usr/local/bin/php /var/www/includes/reset-chores-checkboxes.php >> /var/www/logs/chores-reset.log 2>&1\n0 3 * * * www-data /usr/local/bin/php /var/www/includes/cleanup-login-attempts.php >> /var/www/logs/cleanup.log 2>&1\n' \
+RUN printf 'SHELL=/bin/sh\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\n\
+0 0 * * * www-data /usr/local/bin/php /var/www/includes/reset-chores-checkboxes.php >> /var/www/logs/chores-reset.log 2>&1\n\
+1 0 * * * www-data /usr/local/bin/php /var/www/includes/cleanup-login-attempts.php >> /var/www/logs/cleanup.log 2>&1\n' \
     > /etc/cron.d/chores-rules \
     && chmod 0644 /etc/cron.d/chores-rules
+
+RUN printf '#!/bin/sh\n\
+printenv | grep -E "^(LOGS_PATH|DATA_PATH|MYSQL_HOST|MYSQL_DB|MYSQL_USER|MYSQL_PASSWORD|TIME_ZONE|TZ)=" > /etc/environment\n\
+chown root:root /etc/environment && chmod 0600 /etc/environment\n\
+# Re-assert www-data ownership on every start (the Dockerfile chown does not apply to mounts).\n\
+chown -R www-data:www-data /var/www/data /var/www/logs\n\
+exec docker-php-entrypoint "$@"\n' \
+    > /usr/local/bin/start.sh \
+    && chmod 0755 /usr/local/bin/start.sh
+
+ENTRYPOINT ["/usr/local/bin/start.sh"]
 
 WORKDIR /var/www
 
@@ -42,7 +55,7 @@ COPY logs/    ./logs/
 
 # Normalize permissions for PHP/Apache-readable application code. Host ACLs
 # and source file modes can otherwise leave copied files or parent directories
-# inaccessible to the www-data process on TrueNAS/other Unix hosts.
+# inaccessible to the www-data process on other Unix hosts.
 RUN find /var/www/includes /var/www/public /var/www/api -type d -exec chmod 0755 {} + \
     && find /var/www/includes /var/www/public /var/www/api -type f -exec chmod 0644 {} +
 

@@ -109,7 +109,19 @@ load_env_file($projectRoot . '/.env');
 
 // --- Required keys ---------------------------------------------------------
 
-$REQUIRED_KEYS = [
+// CLI mode (cron jobs, maintenance tasks) validates only the paths it actually uses.
+$CLI_REQUIRED_KEYS = [
+    'LOGS_PATH',
+    'DATA_PATH',
+    // Needed by CLI scripts that touch the database (e.g. cleanup-login-attempts).
+    'MYSQL_HOST',
+    'MYSQL_DB',
+    'MYSQL_USER',
+];
+
+$REQUIRED_KEYS = PHP_SAPI === 'cli'
+    ? $CLI_REQUIRED_KEYS
+    : [
     'HOST_PORT',
     'SESSION_SECRET',
     'WEBROOT_PATH',
@@ -121,14 +133,14 @@ $REQUIRED_KEYS = [
     'COUNCIL_PHONE',
     'LOGS_PATH',
     'DATA_PATH',
-    // User credentials (uncommend before running setup-database.php)
+    // User credentials (uncomment before running setup-database.php, recomment afterwards)
     // 'ADMIN_1',
     // 'PASSWORD_HASH_1',
     // 'ADMIN_2',
     // 'PASSWORD_HASH_2',
     // 'KIDUSER',
     // 'KIDPASS_HASH',
-];
+    ];
 
 // --- Build the global config array -----------------------------------------
 
@@ -162,6 +174,11 @@ foreach ($REQUIRED_KEYS as $key) {
     }
 }
 if ($missing !== []) {
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, "Configuration error: the following required environment variables are missing or empty:\n");
+        fwrite(STDERR, implode("\n", $missing) . "\n");
+        exit(1);
+    }
     http_response_code(500);
     header('Content-Type: text/plain; charset=utf-8');
     echo "Server configuration error: the following required environment variables are missing or empty:\n";
@@ -182,6 +199,10 @@ function check_writable_dir(string $label, string $path): void
     }
 
     if (!is_dir($path)) {
+        if (PHP_SAPI === 'cli') {
+            fwrite(STDERR, "Configuration error: the {$label} directory does not exist: {$path}\n");
+            exit(1);
+        }
         http_response_code(500);
         header('Content-Type: text/plain; charset=utf-8');
         echo "Server configuration error: the {$label} directory does not exist: {$path}\n";
@@ -191,6 +212,10 @@ function check_writable_dir(string $label, string $path): void
 
     if (!is_writable($path)) {
         $user = get_current_user();
+        if (PHP_SAPI === 'cli') {
+            fwrite(STDERR, "Configuration error: the {$label} directory is not writable by {$user}: {$path}\n");
+            exit(1);
+        }
         http_response_code(500);
         header('Content-Type: text/plain; charset=utf-8');
         echo "Server configuration error: the {$label} directory is not writable by the PHP process user ({$user}): {$path}\n";
@@ -220,4 +245,6 @@ $dataPath = (string) ($CONFIG['DATA_PATH'] ?? '');
 $logsPath = (string) ($CONFIG['LOGS_PATH'] ?? '');
 check_writable_dir('data', $dataPath);
 check_writable_dir('logs', $logsPath);
-check_writable_log_file(rtrim($logsPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'auth.log');
+if (PHP_SAPI !== 'cli') {
+    check_writable_log_file(rtrim($logsPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'auth.log');
+}

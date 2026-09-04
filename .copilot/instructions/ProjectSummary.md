@@ -11,6 +11,7 @@ This is a private PHP web app for household chores, screen time, behavior rules,
 - Checkbox and editable-text state is stored in JSON files under `data/`. The APIs support authenticated `GET` and single-key `PUT` operations. Writes use file locking and atomic replacement.
 - State loading and saving is handled by `public/js/persistence.js`, with debounced saves, retrying state loads, save/load notifications, and save flushing when leaving a page.
 - A bottom progress bar tracks completed chores against the current trackable chore total using the persisted checkbox and editable-text state. On `chores-table.php`, fireworks celebrate when the progress reaches 100%.
+- The page menu has a user button that opens a dropdown menu (on hover or click) showing the signed-in username, "My Account" and "Settings" buttons, and a "Log Out" button. The "Settings" button is only visible to `admin` users.
 - `admin` users can edit chore text and restricted consequence checkboxes. `kid` users can check ordinary chores but cannot edit chore text or restricted consequence checkboxes.
 - Council name and phone are injected into `public/pages/main/main-rules.php` from environment variables at request time.
 - Docker runs Apache with PHP 8.5 and PDO MySQL. Docker Compose runs the app and MySQL, seeds one required admin, an optional second admin, and one kid user on first database initialization, and mounts persistent data and logs.
