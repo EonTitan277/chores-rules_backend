@@ -44,9 +44,9 @@ C:\gits\chores-rules_backend\public
 **Option B: Copy to the Laragon www folder**
 ```bash
 cd C:\laragon\www
-git clone <your-repo> chores-app
+git clone <your-repo> chores-rules_backend
 ```
-With this option, Laragon can auto-generate the virtual host (see Step 4, Option A).
+With this option, Laragon can auto-generate the virtual host (see Step 5, Option A).
 
 ---
 
